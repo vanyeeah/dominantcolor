@@ -16,8 +16,6 @@ float maxDist;
 PImage img;
 String imgName;
 int imgW, imgH;
-float imgX, imgY, lenX, lenY;
-float lenXs, lenYs;
 float scale;
 int totPixels, numPixel;
 // distance method
@@ -25,25 +23,17 @@ int totPixels, numPixel;
 // 2 ->  CIE94 (graphic arts)
 // 3 ->  CIE94 (textiles)
 int distMethod;
-// start calc palette
-boolean start;
-// update GUI
-boolean updateGUI;
-// color picked
+float imgX, imgY;
+
 color pCol;
 //GUI
-Button btnSAVE, btnSTART, btnOPEN, btnSORT;
-Button btnM1, btnM2, btnM3;
-SpinBound spnM, spnD;
-// first run
-boolean first;
+
 //double delta;
 
 void setup()
 {
   size(400, 400);
   smooth();
-  first = true;
 
   // set globar var
   maxDist = 10;
@@ -58,26 +48,26 @@ void setup()
   numPixel = 0;
   imgX = 0;
   imgY = 170;
-  lenX = 320;
-  lenY = 240;
 
   init();
+
+  createPalette(img);
 
 }
 
 void init()
 {
-  start = false;
-  updateGUI = true;
-  numCol = 0;
+
+    numCol = 0;
   overColor = false;
   pCol = color(0);
   numPixel = 0;
-  first = true;
+
   for (int i=0; i < maxCol; i++)
   {
     //palette[i] = (int)sqrt(-1);
     palette[i] = color(255);
+
     dist[i] = 0.0;
   }
 
@@ -150,16 +140,10 @@ void createPalette(PImage imgPal)
   totPixels = imgW * imgH;
   numPixel = 0;
   numCol = 0;
-  if (first)
-  {
-   first = false;
-   numCol = 0;
-  }
-  else
-  {
+
    palette[0] = pCol;
    numCol = 1;
-  }
+
   // scan image pixels
   for (int x=0; x < width; x++)
   {

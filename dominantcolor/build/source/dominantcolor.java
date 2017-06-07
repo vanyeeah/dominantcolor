@@ -34,8 +34,6 @@ float maxDist;
 PImage img;
 String imgName;
 int imgW, imgH;
-float imgX, imgY, lenX, lenY;
-float lenXs, lenYs;
 float scale;
 int totPixels, numPixel;
 // distance method
@@ -43,25 +41,17 @@ int totPixels, numPixel;
 // 2 ->  CIE94 (graphic arts)
 // 3 ->  CIE94 (textiles)
 int distMethod;
-// start calc palette
-boolean start;
-// update GUI
-boolean updateGUI;
-// color picked
+float imgX, imgY;
+
 int pCol;
 //GUI
-Button btnSAVE, btnSTART, btnOPEN, btnSORT;
-Button btnM1, btnM2, btnM3;
-SpinBound spnM, spnD;
-// first run
-boolean first;
+
 //double delta;
 
 public void setup()
 {
   
   
-  first = true;
 
   // set globar var
   maxDist = 10;
@@ -76,26 +66,26 @@ public void setup()
   numPixel = 0;
   imgX = 0;
   imgY = 170;
-  lenX = 320;
-  lenY = 240;
 
   init();
+
+  createPalette(img);
 
 }
 
 public void init()
 {
-  start = false;
-  updateGUI = true;
-  numCol = 0;
+
+    numCol = 0;
   overColor = false;
   pCol = color(0);
   numPixel = 0;
-  first = true;
+
   for (int i=0; i < maxCol; i++)
   {
     //palette[i] = (int)sqrt(-1);
     palette[i] = color(255);
+
     dist[i] = 0.0f;
   }
 
@@ -168,16 +158,10 @@ public void createPalette(PImage imgPal)
   totPixels = imgW * imgH;
   numPixel = 0;
   numCol = 0;
-  if (first)
-  {
-   first = false;
-   numCol = 0;
-  }
-  else
-  {
+
    palette[0] = pCol;
    numCol = 1;
-  }
+
   // scan image pixels
   for (int x=0; x < width; x++)
   {
@@ -462,18 +446,18 @@ class Checkbox
 }
 // https://en.wikipedia.org/wiki/Color_difference
 //*********************************
-public double deltaE(int col1, int col2, int m) 
+public double deltaE(int col1, int col2, int m)
 {
   double result = 0.0f;
   if (col1 == col2) { return result; }
   //if (col1==color(0,0,0)) {col1=color(1,1,1);}
   //if (col2==color(0,0,0)) {col2=color(1,1,1);}
-  double[] xyz1 = rgb2xyz(col1);  
+  double[] xyz1 = rgb2xyz(col1);
   double[] lab1 = xyz2lab(xyz1);
- 
+
   double[] xyz2 = rgb2xyz(col2);
   double[] lab2 = xyz2lab(xyz2);
- 
+
   double c1 = Math.sqrt(lab1[1]*lab1[1]+lab1[2]*lab1[2]);
   double c2 = Math.sqrt(lab2[1]*lab2[1]+lab2[2]*lab2[2]);
   double dc = c1-c2;
@@ -488,46 +472,47 @@ public double deltaE(int col1, int col2, int m)
   if (m == 1)
   {
     result = Math.sqrt((da*da)+(db*db)+(dc*dc));
-    if (isNaN(result)) { println("is NaN"); }; 
+    println(result + " " + ((da*da)+(db*db)+(dc*dc)));
+    if (isNaN(result)) { println("is NaN"); };
   }
 
   double primo, secondo, terzo;
 
-  // color distance CIE94 (graphic arts)  
+  // color distance CIE94 (graphic arts)
   if (m == 2)
   {
     primo = dl;
     secondo = dc / (1.0f + 0.045f*c1);
-    terzo = dh / (1.0f + 0.015f*c1);    
+    terzo = dh / (1.0f + 0.015f*c1);
     result = (Math.sqrt(primo*primo + secondo*secondo + terzo*terzo));
-    if (isNaN(result)) { println("is NaN"); };    
-   
-  }    
-  
+    if (isNaN(result)) { println("is NaN"); };
+
+  }
+
   // color distance CIE94 (textiles)
   if (m == 3)
-  {  
+  {
     primo = dl / 2.0f;
     secondo = dc / (1.0f + 0.048f*c1);
     terzo = dh / (1.0f + 0.014f*c1);
     result = (Math.sqrt(primo*primo + secondo*secondo + terzo*terzo));
-    if (isNaN(result)) { println("is NaN"); };    
-  }  
+    if (isNaN(result)) { println("is NaN"); };
+  }
   return result;
 }
- 
-//********************************* 
+
+//*********************************
 public double [] rgb2xyz(int rgb) {
- 
+
   double[] result = new double[3];
- 
+
   //double rr = red(rgb)/255.0;
   //double gg = green(rgb)/255.0;
   //double bb = blue(rgb)/255.0;
   double rr = ((rgb >> 16) & 0xFF) / 255.0f;
   double gg = ((rgb >> 8) & 0xFF) / 255.0f;
-  double bb = (rgb & 0xFF) / 255.0f;  
- 
+  double bb = (rgb & 0xFF) / 255.0f;
+
   if (rr > 0.04045f) {
     rr = (rr + 0.055f) / 1.055f;
     rr = Math.pow(rr, 2.4f);
@@ -546,28 +531,28 @@ public double [] rgb2xyz(int rgb) {
   } else {
     bb = bb / 12.92f;
   }
- 
+
   bb *= 100.0f;
   rr *= 100.0f;
   gg *= 100.0f;
- 
+
   result[0] = rr * 0.4124f + gg * 0.3576f + bb * 0.1805f;
   result[1] = rr * 0.2126f + gg * 0.7152f + bb * 0.0722f;
   result[2] = rr * 0.0193f + gg * 0.1192f + bb * 0.9505f;
- 
+
   return result;
 }
- 
-//********************************* 
+
+//*********************************
 public double [] xyz2lab(double[] xyz) {
- 
+
   double[] result = new double[3];
 
   // luminance values
   double x = xyz[0] / 95.047f;
   double y = xyz[1] / 100.0f;
   double z = xyz[2] / 108.8900f;
- 
+
   if (x > 0.008856f) {
     x = Math.pow(x, 1.0f/3.0f);
   } else {
@@ -583,18 +568,18 @@ public double [] xyz2lab(double[] xyz) {
   } else {
     z = 7.787f*z + 16.0f/116.0f;
   }
- 
+
   result[0] = 116.0f*y - 16.0f;
   result[1] = 500.0f*(x-y);
   result[2] = 200.0f*(y-z);
- 
+
   return result;
 }
 
 public boolean isNaN(double x)
 {
   return (x != x);
-}  
+}
   public void settings() {  size(400, 400);  smooth(); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "dominantcolor" };
