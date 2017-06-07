@@ -39,7 +39,7 @@ void setup()
   maxDist = 10;
   distMethod = 2;
   // load image
-  imgName = "demo1.jpg";
+  imgName = "demo2.jpg";
   img = loadImage(imgName);
   // set image GUI values
   imgW = width;
@@ -188,7 +188,7 @@ void createPalette(PImage imgPal)
       }
     }
   }
-  pCol = palette[0];
+  pCol = palette[1];
 
   //println(hex(pCol,6));
 
